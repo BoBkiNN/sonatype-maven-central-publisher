@@ -50,7 +50,7 @@ fun registerTasks(
 ) {
     val pubName = mavenPublication.name.capitalized()
     // Generate Maven Artifact task
-    project.tasks.register("collect${pubName}Artifacts", GenerateMavenArtifacts::class.java, mavenPublication, additionalTasks)
+    val t1 = project.tasks.register("collect${pubName}Artifacts", GenerateMavenArtifacts::class.java, mavenPublication, additionalTasks)
 
     val groupId = mavenPublication.groupId
     val artifactId = mavenPublication.artifactId
@@ -63,18 +63,26 @@ fun registerTasks(
     val aggregateFiles = project.tasks.register("aggregate${pubName}Files",
         AggregateFiles::class.java, mavenPublication)
     aggregateFiles.configure {
+        it.dependsOn(t1)
         it.directoryPath = directoryPath
     }
 
     // Calculate md5 and sha1 hash of all files in a given directory
-    project.tasks.register("compute${pubName}FilesHash", ComputeHash::class.java, File(directoryPath), shaAlgorithms)
+    val t3 = project.tasks.register("compute${pubName}FilesHash",
+        ComputeHash::class.java, File(directoryPath), shaAlgorithms)
+    t3.configure { it.dependsOn(aggregateFiles) }
 
     // Create a zip of all files in a given directory
     val createZip = project.tasks.register("create${pubName}Zip", CreateZip::class.java)
-    createZip.configure { it.folderPath = project.layout.buildDirectory.get().asFile.resolve("upload").path }
+    createZip.configure {
+        it.folderPath = project.layout.buildDirectory.get().asFile.resolve("upload").path
+        it.dependsOn(t3)
+    }
 
     // Publish to Sonatype Maven Central Repository
-    project.tasks.register("publish${pubName}ToSonatype", PublishToSonatypeCentral::class.java)
+    project.tasks.register("publish${pubName}ToSonatype", PublishToSonatypeCentral::class.java) {
+        it.dependsOn(createZip)
+    }
 
     // Get the deployment status of published deployment by deploymentId
     project.tasks.register("getDeploymentStatus", GetDeploymentStatus::class.java)

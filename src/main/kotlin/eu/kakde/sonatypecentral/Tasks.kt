@@ -14,6 +14,7 @@ import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.IOException
 import org.gradle.api.DefaultTask
+import org.gradle.api.publish.Publication
 import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Input
@@ -54,8 +55,6 @@ abstract class AggregateFiles
 ) : DefaultTask() {
 
     init {
-        this.dependsOn("generateMavenArtifacts")
-
         group = CUSTOM_TASK_GROUP
         description = "Aggregate all publishable artifacts into a temporary directory with proper names."
     }
@@ -102,7 +101,6 @@ abstract class ComputeHash
         init {
             group = CUSTOM_TASK_GROUP
             description = "Compute Hash of all files in a temporary directory."
-            this.dependsOn("aggregateFiles")
         }
 
         @TaskAction
@@ -115,7 +113,6 @@ abstract class CreateZip : DefaultTask() {
     init {
         group = CUSTOM_TASK_GROUP
         description = "Create a zip file comprising all files located within a temporary directory."
-        this.dependsOn("computeHash")
     }
 
     // Folder path to be archived
@@ -138,7 +135,6 @@ abstract class PublishToSonatypeCentral : DefaultTask() {
     init {
         group = CUSTOM_TASK_GROUP
         description = "Publish to New Sonatype Maven Central Repository."
-        this.dependsOn("createZip")
     }
 
     private val extension = project.extensions.getByType(SonatypeCentralPublishExtension::class.java)
