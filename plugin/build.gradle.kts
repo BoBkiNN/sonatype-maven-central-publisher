@@ -8,7 +8,7 @@ plugins {
     id("com.gradle.plugin-publish") version "1.2.1"
 }
 
-group = "eu.kakde.gradle"
+group = "xyz.bobkinn"
 version = "1.1.0-my"
 
 repositories {
@@ -48,7 +48,7 @@ gradlePlugin {
     website = "https://github.com/BoBkiNN/sonatype-maven-central-publisher.git"
     vcsUrl = "https://github.com/BoBkiNN/sonatype-maven-central-publisher.git"
 
-    plugins.creating {
+    plugins.create("sonatype-publisher") {
         id = "xyz.bobkinn.sonatype-publisher"
         version = project.version
         implementationClass = "eu.kakde.sonatypecentral.SonatypeMavenCentralPublisherPlugin"
@@ -64,4 +64,5 @@ publishing.repositories {
 
 publishing.publications.create("main", MavenPublication::class) {
     from(components["java"])
+    artifactId = "sonatype-publisher"
 }
