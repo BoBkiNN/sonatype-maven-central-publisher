@@ -37,8 +37,11 @@ abstract class GenerateMavenArtifacts
     ) : DefaultTask() {
         init {
             if (publication is PublicationInternal<*>) {
-                val tasks = publication.publishableArtifacts.map { it.buildDependencies }
+                val tasks = publication.publishableArtifacts.map {
+                    it.buildDependencies.getDependencies(null)
+                }
                 dependsOn(tasks)
+                println("Generate artifacts depends on $tasks")
             }
             dependsOn(*additionalTasks.toTypedArray())
 
@@ -82,22 +85,15 @@ abstract class AggregateFiles
         val pub = publication as PublicationInternal<*>
 
         pub.publishableArtifacts.forEach { it ->
-            val producerTasks = it.buildDependencies.getDependencies(null)
+//            val producerTasks = it.buildDependencies.getDependencies(null)
 //            println("Artifact ${it.file}, prod: $producerTasks")
             val file = it.file
-            var newName = file.name
-            if (producerTasks.filterIsInstance<GenerateMavenPom>().isNotEmpty()) {
-                newName = when (file.name) {
-                    "pom-default.xml" -> "$artifactId-$version.pom"
-                    "pom-default.xml.asc" -> "$artifactId-$version.pom.asc"
-                    else -> file.name
-                }
-            } else if (producerTasks.filterIsInstance<GenerateModuleMetadata>().isNotEmpty()) {
-                newName = when (file.name) {
-                    "module.json" -> "$artifactId-$version.module"
-                    "module.json.asc" -> "$artifactId-$version.module.asc"
-                    else -> file.name
-                }
+            var newName = when (file.name) {
+                "module.json" -> "$artifactId-$version.module"
+                "module.json.asc" -> "$artifactId-$version.module.asc"
+                "pom-default.xml" -> "$artifactId-$version.pom"
+                "pom-default.xml.asc" -> "$artifactId-$version.pom.asc"
+                else -> file.name
             }
             val targetFile = tempDirFile.resolve(newName)
             file.copyTo(targetFile, overwrite = true)
