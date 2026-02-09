@@ -5,14 +5,6 @@ import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermissions
 
 object IOUtils {
-    fun createDirectoryStructure(directoryPath: String): File {
-        println("Creating Directory structure under: $directoryPath")
-        val directory = File(directoryPath)
-        directory.mkdirs()
-        val permissions = PosixFilePermissions.fromString("rwxrwxrwx")
-        Files.setPosixFilePermissions(directory.toPath(), permissions)
-        return directory
-    }
 
     fun renameFile(
         oldFile: File,
@@ -35,13 +27,4 @@ object IOUtils {
         return newFile
     }
 
-    fun printFileContent(file: File) {
-        try {
-            val content = file.readText()
-            println("Content of file ${file.name}:")
-            println(content)
-        } catch (e: Exception) {
-            println("Error reading file: ${e.message}")
-        }
-    }
 }

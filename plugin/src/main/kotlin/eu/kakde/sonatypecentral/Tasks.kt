@@ -113,7 +113,8 @@ abstract class AggregateFiles : DefaultTask() {
             filesToAggregate.add(renameFile(file, newName))
         }
 
-        val tempDirFile = createDirectoryStructure(directoryPath)
+        val tempDirFile = File(directoryPath)
+        tempDirFile.mkdirs()
         filesToAggregate.forEach { file ->
             tempDirFile.let {
                 file.copyTo(it.resolve(file.name), overwrite = true)
