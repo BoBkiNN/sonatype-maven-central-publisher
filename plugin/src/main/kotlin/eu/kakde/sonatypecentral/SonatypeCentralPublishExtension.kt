@@ -17,9 +17,6 @@ open class SonatypeCentralPublishExtension
 
     @Inject
     constructor(objectFactory: ObjectFactory) {
-        val groupId: Property<String> = objectFactory.property(String::class.java)
-        val artifactId: Property<String> = objectFactory.property(String::class.java)
-        val version: Property<String> = objectFactory.property(String::class.java)
         val publishingType: Property<PublishingType> = objectFactory.property(PublishingType::class.java)
         val additionalTasks: ListProperty<String> = objectFactory.listProperty(String::class.java)
         val shaAlgorithms: ListProperty<String> = objectFactory.listProperty(String::class.java)

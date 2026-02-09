@@ -3,7 +3,6 @@ package eu.kakde.sonatypecentral
 import com.google.gson.GsonBuilder
 import eu.kakde.sonatypecentral.utils.ENDPOINT
 import eu.kakde.sonatypecentral.utils.HashComputation
-import eu.kakde.sonatypecentral.utils.IOUtils.renameFile
 import eu.kakde.sonatypecentral.utils.ZipUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -17,8 +16,6 @@ import okio.IOException
 import org.gradle.api.DefaultTask
 import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.tasks.GenerateMavenPom
-import org.gradle.api.publish.tasks.GenerateModuleMetadata
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
@@ -49,10 +46,6 @@ abstract class GenerateMavenArtifacts
             description = "Generates all necessary artifacts for maven publication."
         }
 
-        @TaskAction
-        fun action() {
-            println("Executing 'generateMavenArtifacts' Task...")
-        }
     }
 
 abstract class AggregateFiles
@@ -118,8 +111,6 @@ abstract class ComputeHash
 
         @TaskAction
         fun run() {
-            println("Executing 'computeHash' Task...")
-            println("Sha algorithms used: $shaAlgorithms")
             HashComputation.computeAndSaveDirectoryHashes(directory, shaAlgorithms)
         }
     }
@@ -137,7 +128,6 @@ abstract class CreateZip : DefaultTask() {
 
     @TaskAction
     fun createArchive() {
-        println("Executing 'createZip' task...")
         println("Creating zip file from the folder: $folderPath ")
         folderPath?.let {
             ZipUtils.prepareZipFile(
@@ -161,15 +151,16 @@ abstract class PublishToSonatypeCentral : DefaultTask() {
     @Throws(IOException::class, URISyntaxException::class)
     @TaskAction
     fun uploadZip() {
-        println("Executing 'publishToSonatypeCentral' tasks...")
+        val pub = extension.publication.get()
+        println("Uploading publication $pub to Sonatype..")
         val username = extension.username.get()
         val password = extension.password.get()
         require(username.isNotBlank()) { "Sonatype username must not be empty" }
         require(password.isNotBlank()) { "Sonatype password must not be empty" }
 
-        val groupId = extension.groupId.get()
-        val artifactId = extension.artifactId.get()
-        val version = extension.version.get()
+        val groupId = pub.groupId
+        val artifactId = pub.artifactId
+        val version = pub.version
         val publishingType = extension.publishingType.get().name
         val name = URLEncoder.encode("$groupId:$artifactId:$version", UTF_8)
 
