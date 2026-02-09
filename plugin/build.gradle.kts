@@ -5,7 +5,6 @@ plugins {
     `java-gradle-plugin`
     `maven-publish`
     `version-catalog`
-    signing
     id("com.gradle.plugin-publish") version "1.2.1"
 }
 
