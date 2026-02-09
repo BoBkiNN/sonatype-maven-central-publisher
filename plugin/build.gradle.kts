@@ -46,8 +46,8 @@ testing {
 }
 
 gradlePlugin {
-    website = "https://github.com/ani2fun/sonatype-maven-central-publisher.git"
-    vcsUrl = "https://github.com/ani2fun/sonatype-maven-central-publisher.git"
+    website = "https://github.com/BoBkiNN/sonatype-maven-central-publisher.git"
+    vcsUrl = "https://github.com/BoBkiNN/sonatype-maven-central-publisher.git"
 
     val sonatypeMavenCentralPublish by plugins.creating {
         id = "xyz.bobkinn.sonatype-publisher"
