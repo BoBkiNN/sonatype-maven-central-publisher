@@ -14,7 +14,6 @@ import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import okio.IOException
 import org.gradle.api.DefaultTask
-import org.gradle.api.publish.Publication
 import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Input
