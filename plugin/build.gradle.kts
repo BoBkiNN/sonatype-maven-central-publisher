@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "xyz.bobkinn"
-version = "1.1.0-my"
+version = "1.1.1"
 
 repositories {
     mavenLocal()
