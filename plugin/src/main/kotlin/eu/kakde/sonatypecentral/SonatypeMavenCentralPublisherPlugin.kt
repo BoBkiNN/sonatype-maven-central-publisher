@@ -50,8 +50,6 @@ fun registerTasks(
 ) {
     // Generate Maven Artifact task
     project.tasks.register("generateMavenArtifacts", GenerateMavenArtifacts::class.java, collectedTasks)
-    // Signed Maven Artifact task
-    project.tasks.register("signMavenArtifacts", SignMavenArtifact::class.java, mavenPublication)
 
     val groupId = mavenPublication.groupId
     val artifactId = mavenPublication.artifactId
