@@ -50,7 +50,7 @@ gradlePlugin {
     vcsUrl = "https://github.com/ani2fun/sonatype-maven-central-publisher.git"
 
     val sonatypeMavenCentralPublish by plugins.creating {
-        id = "eu.kakde.gradle.sonatype-maven-central-publisher"
+        id = "xyz.bobkinn.sonatype-publisher"
         version = project.version
         implementationClass = "eu.kakde.sonatypecentral.SonatypeMavenCentralPublisherPlugin"
         displayName = "Sonatype Maven Central Repository Publisher"
