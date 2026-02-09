@@ -70,6 +70,7 @@ abstract class AggregateFiles
         println("Executing AggregateFiles")
 
         val tempDirFile = File(directoryPath).normalize()
+        if (tempDirFile.exists()) tempDirFile.deleteRecursively()
         tempDirFile.mkdirs()
 
         val artifactId = publication.artifactId
