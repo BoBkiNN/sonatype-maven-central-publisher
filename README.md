@@ -7,19 +7,19 @@ This plugin builds and uploads existing maven publication to Maven Central Repos
 2. Configure extension:
 ```kotlin
 extensions.configure(SonatypeCentralPublishExtension::class) {
-        publication = publishing.publications["main"] as MavenPublication // publication to use
-        username = System.getenv("MAVEN_CENTRAL_USERNAME")
-        password = System.getenv("MAVEN_CENTRAL_PASSWORD")
-        publishingType = PublishingType.USER_MANAGED // or AUTOMATIC to publish on ready
-    }
+    publication = publishing.publications["main"] as MavenPublication // publication to use
+    username = System.getenv("MAVEN_CENTRAL_USERNAME")
+    password = System.getenv("MAVEN_CENTRAL_PASSWORD")
+    publishingType = PublishingType.USER_MANAGED // or AUTOMATIC to publish on ready
+}
 ```
 3. Configure your publication with correct POM and setup signing
 4. Run task `publish<publication name>ToSonatype`
 
 ## Adding to project:
 
-Setup JitPack
-`settings.gradle.kts`:
+**Java 17 or later required**
+Setup JitPack plugin repository in `settings.gradle.kts`:
 ```kotlin
 pluginManagement {
     repositories {
@@ -38,7 +38,7 @@ pluginManagement {
 }
 ```
 
-`build.gradle.kts`:
+Add and apply plugin in `build.gradle.kts`:
 ```kotlin
 plugins {
     id("xyz.bobkinn.sonatype-publisher") version "1.2.5"
@@ -46,3 +46,7 @@ plugins {
 ```
 
 ## About fork:
+This is fork of [sonatype-maven-central-publisher](https://github.com/ani2fun/sonatype-maven-central-publisher) 
+gradle plugin which is targeted to be compatible with existing publications.
+
+There are also more plans for plugin in [TODO file](/TODO.md)
