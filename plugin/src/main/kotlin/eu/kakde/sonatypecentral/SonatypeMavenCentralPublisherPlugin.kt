@@ -12,7 +12,6 @@ const val CUSTOM_TASK_GROUP = "Publish to Sonatype Central"
 class SonatypeMavenCentralPublisherPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         // Configure Custom Extension
-        println("Configuring SonatypeCentralPublishExtension...")
         val customExtension = project.toSonatypeExtension()
 
         // MAIN EXECUTION
