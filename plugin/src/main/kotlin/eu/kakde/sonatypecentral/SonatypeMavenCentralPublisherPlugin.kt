@@ -4,6 +4,7 @@ import eu.kakde.sonatypecentral.SonatypeCentralPublishExtension.Companion.toSona
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.configurationcache.extensions.capitalized
 import java.io.File
 
 const val CUSTOM_TASK_GROUP = "Publish to Sonatype Central"
@@ -58,21 +59,22 @@ fun registerTasks(
     val buildDir = project.layout.buildDirectory.get().asFile.resolve("upload")
     val namespacePath = groupId.replace('.', File.separatorChar)
     val directoryPath = "${buildDir.path}/$namespacePath/$artifactId/$version"
-    val aggregateFiles = project.tasks.register("aggregateFiles",
+    val pubName = mavenPublication.name.capitalized()
+    val aggregateFiles = project.tasks.register("aggregate${pubName}Files",
         AggregateFiles::class.java, mavenPublication)
     aggregateFiles.configure {
         it.directoryPath = directoryPath
     }
 
     // Calculate md5 and sha1 hash of all files in a given directory
-    project.tasks.register("computeHash", ComputeHash::class.java, File(directoryPath), shaAlgorithms)
+    project.tasks.register("compute${pubName}FilesHash", ComputeHash::class.java, File(directoryPath), shaAlgorithms)
 
     // Create a zip of all files in a given directory
-    val createZip = project.tasks.register("createZip", CreateZip::class.java)
+    val createZip = project.tasks.register("create${pubName}Zip", CreateZip::class.java)
     createZip.configure { it.folderPath = project.layout.buildDirectory.get().asFile.resolve("upload").path }
 
     // Publish to Sonatype Maven Central Repository
-    project.tasks.register("publishToSonatype", PublishToSonatypeCentral::class.java)
+    project.tasks.register("publish${pubName}ToSonatype", PublishToSonatypeCentral::class.java)
 
     // Get the deployment status of published deployment by deploymentId
     project.tasks.register("getDeploymentStatus", GetDeploymentStatus::class.java)
