@@ -20,8 +20,6 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.AbstractArchiveTask
-import org.gradle.plugins.signing.Sign
 import java.io.File
 import java.net.URISyntaxException
 import java.net.URLEncoder
