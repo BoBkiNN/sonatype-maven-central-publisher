@@ -19,11 +19,6 @@ object ZipUtils {
             return
         }
 
-        if (zipFile.exists()) {
-            println("Zip file already exists. Please provide a different path.")
-            return
-        }
-
         ZipOutputStream(FileOutputStream(zipFile)).use { zipOut ->
             zipDirectory(sourceFolder, sourceFolder, zipOut)
         }

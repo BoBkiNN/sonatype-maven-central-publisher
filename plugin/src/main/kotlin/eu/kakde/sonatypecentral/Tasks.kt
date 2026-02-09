@@ -94,7 +94,7 @@ abstract class AggregateFiles
             file.copyTo(targetFile, overwrite = true)
         }
 
-        println("Aggregated ${publication.publishableArtifacts.size} artifacts into $directoryPath")
+        println("Aggregated ${allArtifacts.size} artifacts into $directoryPath")
     }
 }
 
