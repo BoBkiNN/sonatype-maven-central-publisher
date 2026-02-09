@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "xyz.bobkinn"
-version = "1.2.0"
+version = rootProject.findProperty("version") as String
 
 repositories {
     mavenCentral()
