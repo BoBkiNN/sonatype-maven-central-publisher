@@ -30,7 +30,7 @@ private fun execution(
         val additionalTasks = extension.additionalTasks.get()
         val shaAlgorithms = extension.shaAlgorithms.get()
         val mavenPublication = extension.publication.get()
-        println("Configuring details - Additional tasks: $additionalTasks, Publication Name - ${mavenPublication.name}")
+//        println("Configuring details - Additional tasks: $additionalTasks, Publication Name - ${mavenPublication.name}")
 
         registerTasks(
             project = project,

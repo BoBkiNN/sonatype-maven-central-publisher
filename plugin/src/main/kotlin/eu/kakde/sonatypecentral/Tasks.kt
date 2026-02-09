@@ -69,7 +69,7 @@ abstract class AggregateFiles
     fun action() {
         println("Executing AggregateFiles")
 
-        val tempDirFile = File(directoryPath)
+        val tempDirFile = File(directoryPath).normalize()
         tempDirFile.mkdirs()
 
         val artifactId = publication.artifactId
@@ -77,8 +77,12 @@ abstract class AggregateFiles
 
         // Copy and rename all publishable artifacts directly into temp dir
         val pub = publication as PublicationInternal<*>
-        pub.publishableArtifacts.forEach { artifact ->
-            val file = artifact.file
+        // TODO ability to add custom files and tasks here
+        val sourcesJar = project.tasks.named("sourcesJar").get().outputs.files.singleFile
+        val javadocJar = project.tasks.named("javadocJar").get().outputs.files.singleFile
+
+        val allArtifacts = pub.publishableArtifacts.map { it.file } + listOf(sourcesJar, javadocJar)
+        allArtifacts.forEach { file ->
             val newName = when (file.name) {
                 "pom-default.xml" -> "$artifactId-$version.pom"
                 "pom-default.xml.asc" -> "$artifactId-$version.pom.asc"
