@@ -1,5 +1,4 @@
 import org.junit.jupiter.api.Assertions
-import xyz.bobkinn.sonatypepublisher.utils.HashComputation
 import java.io.File
 import kotlin.test.Test
 

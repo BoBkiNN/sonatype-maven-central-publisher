@@ -19,7 +19,7 @@ import org.gradle.api.publish.maven.MavenArtifact
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.*
 import xyz.bobkinn.sonatypepublisher.utils.Endpoints
-import xyz.bobkinn.sonatypepublisher.utils.HashComputation
+import xyz.bobkinn.sonatypepublisher.utils.HashUtils
 import xyz.bobkinn.sonatypepublisher.utils.ZipUtils
 import java.net.URISyntaxException
 import java.net.URLEncoder
@@ -108,13 +108,13 @@ abstract class ComputeHash
         }
 
     companion object {
-        val requiredAlgorithms = listOf("MD5", "SHA-1")
+        val REQUIRED_ALGORITHMS = listOf("MD5", "SHA-1")
     }
 
         @TaskAction
         fun run() {
-            HashComputation.computeAndSaveDirectoryHashes(directory.asFile,
-                requiredAlgorithms + additionalAlgorithms)
+            HashUtils.writesFilesHashes(directory.asFile,
+                REQUIRED_ALGORITHMS + additionalAlgorithms)
         }
     }
 
