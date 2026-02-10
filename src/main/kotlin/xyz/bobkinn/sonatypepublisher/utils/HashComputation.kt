@@ -14,7 +14,9 @@ object HashComputation {
         val ext= getExtension(digest.algorithm)
         val fileName = "${file.name}.$ext"
         val targetFile = File(file.parent, fileName)
-        writeContentToFile(targetFile, hash)
+        file.bufferedWriter(UTF_8).use {
+            it.write(hash)
+        }
         return targetFile
     }
 
@@ -33,14 +35,5 @@ object HashComputation {
             }
         }
         return ret ?: listOf()
-    }
-
-    private fun writeContentToFile(
-        file: File,
-        content: String,
-    ) {
-        file.bufferedWriter(UTF_8).use { writer ->
-            writer.write(content)
-        }
     }
 }
