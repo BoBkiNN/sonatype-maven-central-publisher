@@ -36,12 +36,14 @@ private fun execution(
         val mavenPublication = extension.publication.get()
 //        println("Configuring details - Additional tasks: $additionalTasks, Publication Name - ${mavenPublication.name}")
 
-        registerTasks(
+        registerTasksPipeline(
             project = project,
             mavenPublication = mavenPublication,
             additionalTasks = additionalTasks,
             additionalAlgorithms = additionalAlgorithms,
         )
+
+        registerCommonTasks(it)
     }
 }
 
@@ -60,8 +62,16 @@ fun getArchiveFile(pubFolder: Directory): RegularFile = pubFolder.file("upload.z
 
 fun DirectoryProperty.with(dir: Directory) = apply { set(dir) }
 
+fun registerCommonTasks(project: Project) {
+    // Get the deployment status of published deployment by deploymentId
+    project.tasks.register("getDeploymentStatus", GetDeploymentStatus::class.java)
+
+    // Drop a deployment by deploymentId
+    project.tasks.register("dropDeployment", DropDeployment::class.java)
+}
+
 // Register tasks for the plugin
-fun registerTasks(
+fun registerTasksPipeline(
     project: Project,
     mavenPublication: MavenPublication,
     additionalTasks: List<String>,
@@ -102,10 +112,4 @@ fun registerTasks(
         .configure {
         it.dependsOn(createZip)
     }
-
-    // Get the deployment status of published deployment by deploymentId
-    project.tasks.register("getDeploymentStatus", GetDeploymentStatus::class.java)
-
-    // Drop a deployment by deploymentId
-    project.tasks.register("dropDeployment", DropDeployment::class.java)
 }
