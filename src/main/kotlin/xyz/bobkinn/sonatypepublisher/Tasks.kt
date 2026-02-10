@@ -1,9 +1,6 @@
 package xyz.bobkinn.sonatypepublisher
 
 import com.google.gson.GsonBuilder
-import xyz.bobkinn.sonatypepublisher.utils.Endpoints
-import xyz.bobkinn.sonatypepublisher.utils.HashComputation
-import xyz.bobkinn.sonatypepublisher.utils.ZipUtils
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
@@ -17,16 +14,13 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenArtifact
 import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
+import xyz.bobkinn.sonatypepublisher.utils.Endpoints
+import xyz.bobkinn.sonatypepublisher.utils.HashComputation
+import xyz.bobkinn.sonatypepublisher.utils.ZipUtils
 import java.net.URISyntaxException
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets.UTF_8
@@ -149,6 +143,17 @@ abstract class CreateZip @Inject constructor(
     }
 }
 
+fun Request.Builder.addAuth(extension: SonatypePublishExtension): Request.Builder {
+    val username = extension.username.get()
+    val password = extension.password.get()
+    require(username.isNotBlank()) { "Sonatype username must not be empty" }
+    require(password.isNotBlank()) { "Sonatype password must not be empty" }
+    val credentials = "$username:$password"
+    val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray())
+    addHeader("Authorization", "UserToken $encodedCredentials")
+    return this
+}
+
 abstract class PublishToSonatypeCentral(
     @InputFile
     val zipFile: RegularFileProperty
@@ -166,10 +171,6 @@ abstract class PublishToSonatypeCentral(
     fun uploadZip() {
         val pub = extension.publication.get()
         println("Uploading publication ${pub.name} to Sonatype..")
-        val username = extension.username.get()
-        val password = extension.password.get()
-        require(username.isNotBlank()) { "Sonatype username must not be empty" }
-        require(password.isNotBlank()) { "Sonatype password must not be empty" }
 
         val groupId = pub.groupId
         val artifactId = pub.artifactId
@@ -177,8 +178,6 @@ abstract class PublishToSonatypeCentral(
         val publishingType = extension.publishingType.get().name
         val name = URLEncoder.encode("$groupId:$artifactId:$version", UTF_8)
 
-        val credentials = "$username:$password"
-        val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray())
         val url = "${Endpoints.UPLOAD}?publishingType=$publishingType&name=$name"
 
         val body =
@@ -193,7 +192,7 @@ abstract class PublishToSonatypeCentral(
         val request =
             Request.Builder()
                 .post(body)
-                .addHeader("Authorization", "UserToken $encodedCredentials")
+                .addAuth(extension)
                 .url(url)
                 .build()
 
@@ -221,19 +220,12 @@ abstract class GetDeploymentStatus : DefaultTask() {
     @TaskAction
     fun executeTask() {
         println("Executing 'getDeploymentStatus' task... With parameter deploymentId=$deploymentId")
-        val username = extension.username.get()
-        val password = extension.password.get()
-        require(username.isNotBlank()) { "Sonatype username must not be empty" }
-        require(password.isNotBlank()) { "Sonatype password must not be empty" }
-        val credentials = "$username:$password"
-        val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray())
-
         val requestBody = "".toRequestBody("application/json".toMediaType())
 
         val request =
             Request.Builder()
                 .post(requestBody)
-                .addHeader("Authorization", "UserToken $encodedCredentials")
+                .addAuth(extension)
                 .url("${Endpoints.STATUS}?id=$deploymentId")
                 .build()
 
@@ -260,18 +252,12 @@ abstract class DropDeployment : DefaultTask() {
 
     @TaskAction
     fun executeTask() {
-        println("Executing 'dropDeployment' task... Dropping deployment for deploymentId=$deploymentId")
-        val username = extension.username.get()
-        val password = extension.password.get()
-        require(username.isNotBlank()) { "Sonatype username must not be empty" }
-        require(password.isNotBlank()) { "Sonatype password must not be empty" }
-        val credentials = "$username:$password"
-        val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray())
+        println("Dropping deployment for deploymentId=$deploymentId ...")
 
         val request =
             Request.Builder()
                 .delete()
-                .addHeader("Authorization", "UserToken $encodedCredentials")
+                .addAuth(extension)
                 .url("${Endpoints.DEPLOYMENT}/$deploymentId")
                 .build()
 
