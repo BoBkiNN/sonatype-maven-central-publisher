@@ -35,7 +35,7 @@ object HashUtils {
 
 
     fun writeChecksum(file: File, digest: MessageDigest): File {
-        val hash = HashUtils.getCheckSumFromFile(digest, file)
+        val hash = getCheckSumFromFile(digest, file)
         val ext= getExtension(digest.algorithm)
         val fileName = "${file.name}.$ext"
         val targetFile = File(file.parent, fileName)
