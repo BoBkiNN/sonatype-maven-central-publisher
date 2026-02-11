@@ -27,7 +27,8 @@ abstract class BuildPublicationArtifacts
                     it.buildDependencies.getDependencies(null)
                 }
                 dependsOn(tasks)
-//                println("Generate artifacts depends on $tasks")
+                logger.debug("Publication depends on tasks: {}",
+                    tasks.map { it.map { it.path }.toString() })
             }
             dependsOn(*additionalTasks.toTypedArray())
 
@@ -83,7 +84,7 @@ abstract class AggregateFiles
             }
             val targetFile = folder.resolve(newName)
             file.copyTo(targetFile, overwrite = true)
-//            println("Copied $file to $targetFile")
+            logger.debug("Copied artifact {} to {}", file, targetFile)
         }
     }
 }
@@ -105,6 +106,8 @@ abstract class ComputeHashes
 
         @TaskAction
         fun run() {
+            logger.debug("Writing file hashes at {}",
+                directory.get().asFile.relativeTo(project.rootDir))
             HashUtils.writesFilesHashes(directory.get().asFile,
                 REQUIRED_ALGORITHMS + additionalAlgorithms)
         }
