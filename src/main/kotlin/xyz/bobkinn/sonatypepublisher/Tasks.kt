@@ -14,7 +14,7 @@ import xyz.bobkinn.sonatypepublisher.utils.PublisherApi
 import xyz.bobkinn.sonatypepublisher.utils.ZipUtils
 import javax.inject.Inject
 
-abstract class GenerateMavenArtifacts
+abstract class BuildPublicationArtifacts
     @Inject
     constructor(
         @Internal val publication: Provider<MavenPublication>,

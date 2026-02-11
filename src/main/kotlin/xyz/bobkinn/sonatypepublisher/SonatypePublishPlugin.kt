@@ -65,22 +65,22 @@ fun registerTasksPipeline(
     val pub = config.publication
     val name = config.name.capitalized()
 
-    val collectArtifacts = project.tasks.register("collect${name}Artifacts",
-        GenerateMavenArtifacts::class.java, pub, additionalTasks)
+    val buildArtifacts = project.tasks.register("build${name}Artifacts",
+        BuildPublicationArtifacts::class.java, pub, additionalTasks)
 
     val pubFolder = pub.flatMap { it.sonatypePublishFolder(project) }
     val aggregateFolder = pubFolder.resolveDir(AGGREGATE_FOLDER_NAME)
 
     val filesFolder = aggregateFolder.flatMap { d ->
-        pub.map {m ->
-            publicationVersionDir(d, m)
+        pub.map {p ->
+            publicationVersionDir(d, p)
         }
     }
 
     val aggregateFiles = project.tasks.register("aggregate${name}Files",
         AggregateFiles::class.java, pub, filesFolder)
     aggregateFiles.configure {
-        it.dependsOn(collectArtifacts)
+        it.dependsOn(buildArtifacts)
     }
 
     // Calculate md5 and sha1 hash of all files in a given directory
