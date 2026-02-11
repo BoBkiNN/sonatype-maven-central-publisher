@@ -50,12 +50,14 @@ private fun execution(
 fun MavenPublication.sonatypePublishFolder(project: Project): Provider<Directory> = project.layout.buildDirectory.dir("sonatypePublish")
     .map { it.dir(name) }
 
+const val AGGREGATE_FOLDER_NAME = "aggregate"
+
 fun publicationVersionDir(pubFolder: Directory, pub: MavenPublication): Directory {
     val groupId = pub.groupId
     val artifactId = pub.artifactId
     val version = pub.version
     val namespacePath = groupId.replace('.', File.separatorChar)
-    return pubFolder.dir("aggregate").dir(namespacePath).dir(artifactId).dir(version)
+    return pubFolder.dir(AGGREGATE_FOLDER_NAME).dir(namespacePath).dir(artifactId).dir(version)
 }
 
 fun getArchiveFile(pubFolder: Directory): RegularFile = pubFolder.file("upload.zip")
@@ -99,10 +101,10 @@ fun registerTasksPipeline(
 
     // Create a zip of all files in a given directory
     val archiveFileProp = project.objects.fileProperty().apply {
-        set(getArchiveFile(aggregateTarget))
+        set(getArchiveFile(pubFolder))
     }
     val createZip = project.tasks.register("create${pubName}Zip", CreateZip::class.java,
-        project.objects.directoryProperty().with(aggregateTarget), archiveFileProp)
+        project.objects.directoryProperty().with(pubFolder.dir(AGGREGATE_FOLDER_NAME)), archiveFileProp)
     createZip.configure {
         it.dependsOn(t3)
     }
