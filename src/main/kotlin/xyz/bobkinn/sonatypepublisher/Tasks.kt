@@ -12,6 +12,7 @@ import org.gradle.api.tasks.*
 import xyz.bobkinn.sonatypepublisher.utils.HashUtils
 import xyz.bobkinn.sonatypepublisher.utils.PublisherApi
 import xyz.bobkinn.sonatypepublisher.utils.ZipUtils
+import java.io.File
 import javax.inject.Inject
 
 abstract class BuildPublicationArtifacts
@@ -65,11 +66,7 @@ abstract class AggregateFiles
         val pub = publication as PublicationInternal<*>
         logger.lifecycle("Aggregating ${pub.publishableArtifacts.size} artifacts" +
                 " into ${folder.relativeTo(project.rootDir)}")
-        pub.publishableArtifacts.forEach { it ->
-//            val producerTasks = it.buildDependencies.getDependencies(null)
-//            println("Artifact ${it.file}, prod: $producerTasks")
-            it as MavenArtifact
-            val file = it.file
+        fun processArtifact(file: File, classifier: String?, extension: String) {
             var newName = when (file.name) {
                 "module.json" -> "$artifactId-$version.module"
                 "module.json.asc" -> "$artifactId-$version.module.asc"
@@ -78,13 +75,19 @@ abstract class AggregateFiles
                 else -> file.name
             }
             if (file.name.endsWith(".jar.asc") || file.name.endsWith(".jar")) {
-                val cls = it.classifier?.let { "-$it" } ?: ""
-                newName = "$artifactId-$version$cls.${it.extension}"
+                val cls = classifier?.let { "-$it" } ?: ""
+                newName = "$artifactId-$version$cls.${extension}"
 //                println("were ${file.name}, become $newName")
             }
             val targetFile = folder.resolve(newName)
             file.copyTo(targetFile, overwrite = true)
             logger.debug("Copied artifact {} to {}", file, targetFile)
+        }
+        pub.publishableArtifacts.forEach { it ->
+//            val producerTasks = it.buildDependencies.getDependencies(null)
+//            println("Artifact ${it.file}, prod: $producerTasks")
+            it as MavenArtifact
+            processArtifact(it.file, it.classifier, it.extension)
         }
     }
 }
