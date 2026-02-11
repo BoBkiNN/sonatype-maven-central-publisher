@@ -32,7 +32,7 @@ abstract class GenerateMavenArtifacts
             dependsOn(*additionalTasks.toTypedArray())
 
             group = TASKS_GROUP
-            description = "Aggregator tasks to build publication artifacts"
+            description = "Aggregator task to build publication artifacts"
         }
 
     }
