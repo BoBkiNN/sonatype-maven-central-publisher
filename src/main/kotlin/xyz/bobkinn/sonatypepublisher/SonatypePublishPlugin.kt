@@ -16,34 +16,22 @@ const val CUSTOM_TASK_GROUP = "sonatypePublish"
 @Suppress("unused")
 class SonatypePublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        // Configure Custom Extension
-        val customExtension = project.toSonatypeExtension()
+        val ext = project.toSonatypeExtension()
 
-        // MAIN EXECUTION
-        execution(project, customExtension)
-    }
-}
+        project.afterEvaluate {
+            val additionalTasks = ext.additionalTasks.get()
+            val additionalAlgorithms = ext.additionalAlgorithms.get()
+            val mavenPublication = ext.publication.get()
 
-private fun execution(
-    project: Project,
-    extension: SonatypePublishExtension,
-) {
+            registerTasksPipeline(
+                project = project,
+                mavenPublication = mavenPublication,
+                additionalTasks = additionalTasks,
+                additionalAlgorithms = additionalAlgorithms,
+            )
 
-    project.afterEvaluate {
-        // Retrieve properties from custom extension
-        val additionalTasks = extension.additionalTasks.get()
-        val additionalAlgorithms = extension.additionalAlgorithms.get()
-        val mavenPublication = extension.publication.get()
-//        println("Configuring details - Additional tasks: $additionalTasks, Publication Name - ${mavenPublication.name}")
-
-        registerTasksPipeline(
-            project = project,
-            mavenPublication = mavenPublication,
-            additionalTasks = additionalTasks,
-            additionalAlgorithms = additionalAlgorithms,
-        )
-
-        registerCommonTasks(it)
+            registerCommonTasks(it)
+        }
     }
 }
 
