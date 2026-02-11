@@ -45,9 +45,6 @@ const val UPLOAD_ZIP_NAME = "upload.zip"
 
 fun Provider<Directory>.resolveDir(name: String): Provider<Directory> = map { it.dir(name) }
 
-fun MavenPublication.sonatypePublishFolder(project: Project): Provider<Directory> =
-    project.layout.buildDirectory.dir(PLUGIN_FOLDER_NAME).resolveDir(name)
-
 fun publicationVersionDir(aggregateFolder: Directory, pub: MavenPublication): Directory {
     val groupId = pub.groupId
     val artifactId = pub.artifactId
@@ -68,7 +65,8 @@ fun registerTasksPipeline(
     val buildArtifacts = project.tasks.register("build${name}Artifacts",
         BuildPublicationArtifacts::class.java, pub, additionalTasks)
 
-    val pubFolder = pub.flatMap { it.sonatypePublishFolder(project) }
+    val pubFolder = project.layout.buildDirectory
+        .dir(PLUGIN_FOLDER_NAME).resolveDir(name)
     val aggregateFolder = pubFolder.resolveDir(AGGREGATE_FOLDER_NAME)
 
     val filesFolder = aggregateFolder.flatMap { d ->
