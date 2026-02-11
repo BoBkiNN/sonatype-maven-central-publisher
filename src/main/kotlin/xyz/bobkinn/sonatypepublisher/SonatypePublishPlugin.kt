@@ -11,7 +11,7 @@ import org.gradle.configurationcache.extensions.capitalized
 import xyz.bobkinn.sonatypepublisher.SonatypePublishExtension.Companion.toSonatypeExtension
 import java.io.File
 
-const val CUSTOM_TASK_GROUP = "sonatypePublish"
+const val TASKS_GROUP = "sonatypePublish"
 
 @Suppress("unused")
 class SonatypePublishPlugin : Plugin<Project> {

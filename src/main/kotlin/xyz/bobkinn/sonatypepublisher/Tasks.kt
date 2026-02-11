@@ -30,7 +30,7 @@ abstract class GenerateMavenArtifacts
             }
             dependsOn(*additionalTasks.toTypedArray())
 
-            group = CUSTOM_TASK_GROUP
+            group = TASKS_GROUP
             description = "Aggregator tasks to build publication artifacts"
         }
 
@@ -44,7 +44,7 @@ abstract class AggregateFiles
 ) : DefaultTask() {
 
     init {
-        group = CUSTOM_TASK_GROUP
+        group = TASKS_GROUP
         description = "Aggregate all publishable artifacts into a temporary directory with proper names."
     }
 
@@ -91,7 +91,7 @@ abstract class ComputeHash
         @Internal val additionalAlgorithms: List<String>,
     ) : DefaultTask() {
         init {
-            group = CUSTOM_TASK_GROUP
+            group = TASKS_GROUP
             description = "Compute Hash of all files in a temporary directory."
         }
 
@@ -112,7 +112,7 @@ abstract class CreateZip @Inject constructor(
 ) : DefaultTask() {
 
     init {
-        group = CUSTOM_TASK_GROUP
+        group = TASKS_GROUP
         description = "Creates a zip from aggregated and processed files"
     }
 
@@ -137,7 +137,7 @@ abstract class PublishToSonatypeCentral @Inject constructor(
 ) : DefaultTask() {
 
     init {
-        group = CUSTOM_TASK_GROUP
+        group = TASKS_GROUP
         description = "Publish to New Sonatype Maven Central Repository."
     }
 
@@ -159,7 +159,7 @@ abstract class PublishToSonatypeCentral @Inject constructor(
 
 abstract class GetDeploymentStatus : DefaultTask() {
     init {
-        group = CUSTOM_TASK_GROUP
+        group = TASKS_GROUP
         description = "Get deployment status using deploymentId"
     }
 
@@ -183,7 +183,7 @@ abstract class GetDeploymentStatus : DefaultTask() {
 
 abstract class DropDeployment : DefaultTask() {
     init {
-        group = CUSTOM_TASK_GROUP
+        group = TASKS_GROUP
         description = "Drop deployment using deploymentId."
     }
 
