@@ -1,6 +1,7 @@
 # Simple gradle plugin to publish maven publication to Sonatype Central Portal
 
-This plugin builds and uploads existing maven publication to Maven Central Repository using Portal Publisher API
+This plugin builds and uploads existing maven publication to Maven Central Repository
+using [Portal Publisher API](https://central.sonatype.org/publish/publish-portal-api/)
 
 ## Usage:
 1. Add and apply plugin
@@ -46,8 +47,9 @@ plugins {
 ```
 
 ## About fork:
-This is fork of [sonatype-maven-central-publisher](https://github.com/ani2fun/sonatype-maven-central-publisher) 
-gradle plugin which is targeted to be compatible with existing publications.
+Based on [sonatype-maven-central-publisher](https://github.com/ani2fun/sonatype-maven-central-publisher),
+i have introduced critical changes, code improvements and fixes, 
+targeting different goal to work with existing publications.
 
 Fixed issues:
 - [#4 - windows support](https://github.com/ani2fun/sonatype-maven-central-publisher/issues/4)
