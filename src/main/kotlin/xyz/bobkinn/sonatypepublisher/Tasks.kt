@@ -266,6 +266,7 @@ private fun getStatus(id: String, extension: SonatypePublishExtension): Publishe
 
 private fun fetchAndUpdateDeployments(dd: DeploymentsData, extension: SonatypePublishExtension,
                                       onlyId: String? = null) {
+    val updated = mutableListOf<Deployment>()
     val it = dd.current.values.iterator()
     while (it.hasNext()) {
         val d = it.next()
@@ -280,8 +281,13 @@ private fun fetchAndUpdateDeployments(dd: DeploymentsData, extension: SonatypePu
             it.remove()
             dd.published.put(d.id, d)
         } else {
-            d.update(status)
+            // update status
+            val upd = d.update(status)
+            updated.add(upd)
         }
+    }
+    for (d in updated) {
+        dd.current[d.id] = d
     }
 }
 
