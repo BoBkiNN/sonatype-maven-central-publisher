@@ -37,6 +37,10 @@ fun registerCommonTasks(project: Project) {
 
     // Drop a deployment by deploymentId
     project.tasks.register("dropDeployment", DropDeployment::class.java)
+
+    project.tasks.register("checkDeployments", CheckDeployments::class.java)
+
+    project.tasks.register("dropFailedDeployments", DropFailed::class.java)
 }
 
 const val PLUGIN_FOLDER_NAME = "sonatypePublish"

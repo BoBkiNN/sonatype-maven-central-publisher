@@ -147,6 +147,7 @@ object PublisherApi {
         val errors: Any
     ) {
         val isPublished = deploymentState == DeploymentState.PUBLISHED
+        val isFailed = deploymentState == DeploymentState.FAILED
     }
 
     fun getDeploymentStatus(id: String, username: String, password: String): DeploymentStatus? {

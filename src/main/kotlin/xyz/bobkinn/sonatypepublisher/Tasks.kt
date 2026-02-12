@@ -2,8 +2,10 @@ package xyz.bobkinn.sonatypepublisher
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
+import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenArtifact
@@ -192,19 +194,23 @@ abstract class GetDeploymentStatus : DefaultTask() {
         logger.lifecycle("Got deployment status:\n$json")
 
         logger.debug("Updating deployment data..")
-        if (status.isPublished) {
+        if (status != null && status.isPublished) {
             logger.debug("Moving deployment to published list")
             val dep = Deployment(deploymentId, status, System.currentTimeMillis())
             // put to published
             StoredDeploymentsManager.putPublished(project, dep)
             // remove from current
             StoredDeploymentsManager.removeCurrent(project, deploymentId)
-        } else {
+        } else if (status != null) {
             logger.debug("Updating current deployments list..")
             // update current
             StoredDeploymentsManager.update(project, deploymentId) {
                 it?.update(status) // update status if already listed
             }
+        } else {
+            logger.debug("Deployment not found, removing it from lists..")
+            StoredDeploymentsManager.removeCurrent(project, deploymentId)
+            StoredDeploymentsManager.removePublished(project, deploymentId)
         }
     }
 }
@@ -232,5 +238,115 @@ abstract class DropDeployment : DefaultTask() {
 
         logger.debug("Removing deployment from current list..")
         StoredDeploymentsManager.removeCurrent(project, deploymentId)
+    }
+}
+
+private fun getStatus(id: String, extension: SonatypePublishExtension): PublisherApi.DeploymentStatus? {
+    return try {
+        PublisherApi.getDeploymentStatus(id, extension.username.get(),
+            extension.password.get())
+    } catch (e: PublisherApi.PortalApiError) {
+        throw GradleException("Failed to get deployment status", e)
+    }
+}
+
+private fun fetchAndUpdateDeployments(dd: DeploymentsData, extension: SonatypePublishExtension) {
+    val it = dd.current.values.iterator()
+    while (it.hasNext()) {
+        val d = it.next()
+        val status = getStatus(d.id, extension)
+        if (status == null) {
+            // removed
+            it.remove()
+            dd.published.remove(d.id)
+        } else if (status.isPublished) {
+            // state changed to published
+            it.remove()
+            dd.published.put(d.id, d)
+        } else {
+            d.update(status)
+        }
+    }
+}
+
+fun updateGetDeployments(project: Project, logger: Logger): DeploymentsData {
+    val extension = project.extensions.getByType(SonatypePublishExtension::class.java)
+    val dd = StoredDeploymentsManager.load(project)
+    logger.lifecycle("Fetching and updating ${dd.current.size} deployment(s)..")
+    fetchAndUpdateDeployments(dd, extension)
+    StoredDeploymentsManager.save(project, dd)
+    return dd
+}
+
+abstract class CheckDeployments : DefaultTask() {
+    init {
+        group = TASKS_GROUP
+        description = "Update current deployments information and print its statuses." +
+                "Pass deploymentId property to specify exact deployment"
+    }
+
+    @Input
+    var deploymentId: String? = project.findProperty("deploymentId")?.toString()
+
+    private fun logStatus(status: PublisherApi.DeploymentStatus) {
+        logger.info("Deployment ${status.deploymentId} - ${status.deploymentState}:")
+        logger.info("  Name: ${status.deploymentName}")
+        val errorsJson = PublisherApi.gson.toJson(status.errors)
+        logger.info("  Errors: $errorsJson")
+    }
+
+    private fun logDeployment(dep: Deployment) {
+        if (dep.deployment != null) logStatus(dep.deployment)
+        else logger.info("Deployment ${dep.id} - UNKNOWN")
+    }
+
+    @TaskAction
+    fun executeTask() {
+        val dd = updateGetDeployments(project, logger)
+        deploymentId?.let {
+            logger.info("--- Deployment $it status:")
+            val dep = dd[it]
+            if (dep == null) throw GradleException("No deployment with id $it stored")
+            logDeployment(dep)
+            return
+        }
+        if (dd.current.isEmpty()) {
+            logger.info("No unreleased deployment IDs stored")
+            return
+        }
+        logger.info("Status of ${dd.current.size} unreleased deployment(s):")
+        for (dep in dd.current.values) {
+            logDeployment(dep)
+        }
+    }
+}
+
+abstract class DropFailed : DefaultTask() {
+    init {
+        group = TASKS_GROUP
+        description = "Fetches and updates current deployments and then drops any failed current deployments"
+    }
+
+    private val extension = project.extensions.getByType(SonatypePublishExtension::class.java)
+
+    @TaskAction
+    fun executeTask() {
+        val dd = updateGetDeployments(project, logger)
+        val username = extension.username.get()
+        val password = extension.password.get()
+
+        logger.lifecycle("Dropping failed deployments..")
+        var c = 0
+        for (dep in dd.current.values) {
+            val status = dep.deployment ?: continue
+            if (!status.isFailed) continue
+            try {
+                PublisherApi.dropDeployment(dep.id, username, password)
+                c++
+            } catch (e: PublisherApi.PortalApiError) {
+                throw GradleException("Failed to drop failed deployment ${dep.id}", e)
+            }
+        }
+        logger.lifecycle("Dropped $c failed deployment(s) out of total ${dd.current.size}")
     }
 }

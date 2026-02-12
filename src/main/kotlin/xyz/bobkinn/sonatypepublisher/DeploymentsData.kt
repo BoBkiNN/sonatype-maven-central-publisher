@@ -37,6 +37,8 @@ data class DeploymentsData(
     val current: MutableMap<String, Deployment>
 ) {
     constructor() : this(HashMap(), HashMap())
+
+    operator fun get(id: String) = current[id] ?: published[id]
 }
 
 object StoredDeploymentsManager {
@@ -76,6 +78,11 @@ object StoredDeploymentsManager {
         val d = load(project)
         d.published[dep.id] = dep
         save(project, d)
+    }
+
+    fun removePublished(project: Project, id: String) {
+        val d = load(project)
+        if (d.published.remove(id) != null) save(project, d)
     }
 
     fun removeCurrent(project: Project, id: String) {
