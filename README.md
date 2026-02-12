@@ -30,7 +30,7 @@ sonatypePublish {
     registerMaven(publishing.publications.named("main", MavenPublication::class))
 }
 ```
-3. Configure your publication with correct POM and signing to match maven central requirements
+3. Configure your publication with correct POM, sources, javadocs and signing to match [maven central requirements](https://central.sonatype.org/publish/requirements/)
 4. Run task `publish<publication name>ToSonatype`
 
 ## Adding to project:
@@ -120,8 +120,8 @@ Deployments statuses is stored in `<root project>/build/sonatypePublish/deployme
 All tasks use credentials defined in your plugin extension:
 ```kotlin
 sonatypePublish {
-    username.set("your-username")
-    password.set("your-password")
+    username = "your-username"
+    password = "your-password"
 }
 ```
 
