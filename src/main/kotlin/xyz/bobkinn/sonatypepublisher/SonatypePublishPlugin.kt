@@ -67,7 +67,7 @@ fun registerTasksPipeline(
     }
 
     val pubFolder = project.layout.buildDirectory
-        .dir(PLUGIN_FOLDER_NAME).resolveDir(name)
+        .dir(PLUGIN_FOLDER_NAME).resolveDir(config.name)
     val aggregateFolder = pubFolder.resolveDir(AGGREGATE_FOLDER_NAME)
 
     val filesFolder = aggregateFolder.flatMap { d ->
