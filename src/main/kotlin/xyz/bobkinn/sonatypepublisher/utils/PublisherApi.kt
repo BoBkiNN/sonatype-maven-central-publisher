@@ -29,7 +29,7 @@ object PublisherApi {
             .build()
     }
 
-    val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+    val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
 
     fun ResponseBody.isJson(): Boolean {
         val type = contentType() ?: return false
@@ -54,7 +54,7 @@ object PublisherApi {
 
     fun readError(body: ResponseBody): ErrorResponse {
         return try {
-            gson.fromJson(body.charStream(), ErrorResponse::class.java)
+            GSON.fromJson(body.charStream(), ErrorResponse::class.java)
         } catch (e: JsonParseException) {
             throw IOException("Failed to read json", e)
         } ?: throw IOException("No json can be read")
@@ -168,7 +168,7 @@ object PublisherApi {
             }
             r.body?.let {b ->
                 try {
-                    return gson.fromJson(b.charStream(), DeploymentStatus::class.java)
+                    return GSON.fromJson(b.charStream(), DeploymentStatus::class.java)
                 } catch (e: JsonParseException) {
                     throw PortalApiError("Failed to read returned status", e)
                 }

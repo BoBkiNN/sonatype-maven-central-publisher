@@ -308,7 +308,7 @@ abstract class CheckDeployments : DefaultTask() {
     private fun logStatus(status: PublisherApi.DeploymentStatus) {
         logger.info("Deployment ${status.deploymentId} - ${status.deploymentState}:")
         logger.info("  Name: ${status.deploymentName}")
-        val errorsJson = PublisherApi.gson.toJson(status.errors)
+        val errorsJson = PublisherApi.GSON.toJson(status.errors)
         logger.info("  Errors: $errorsJson")
     }
 
