@@ -73,6 +73,41 @@ Fixed issues:
 
 There are also more plans for plugin in [TODO file](/TODO.md)
 
+## Available Options
+
+Each publication can be configured via the `SonatypePublishExtension` using the following options:
+
+* **`publishingType`** (`AUTOMATIC` | `USER_MANAGED`)
+  Determines how the publication is uploaded to Sonatype.
+
+* **`additionalTasks`** (`List<String>`)
+  Extra tasks to run when building artifacts for this publication.
+  > Currently, this tasks results are not included in bundle
+
+* **`additionalAlgorithms`** (`List<String>`)
+  Extra hash algorithms to include in the bundle.
+
+  > MD5 and SHA-1 are always included.
+
+* **`username` / `password`** (`String`)
+  Sonatype credentials for authentication.
+
+* **`publication`** (`MavenPublication`)
+  The Gradle publication whose artifacts will be built and published.
+
+**Registering a Maven publication:**
+
+```kotlin
+sonatypePublish.registerMaven("myLib", myPublication) {
+    it.publishingType = PublishingType.AUTOMATIC
+    it.additionalTasks = listOf("someTask")
+    it.additionalAlgorithms = listOf("SHA-256")
+}
+```
+
+* Credentials and other internal settings are handled automatically by the plugin.
+* Users usually only need to specify the publication and optional additional tasks or hash algorithms.
+
 ## General Deployment Tasks
 
 These tasks provide **manual control and bulk automation** for Sonatype Portal deployments.
@@ -191,3 +226,40 @@ Fetches latest statuses and publishes all validated deployments automatically.
 * Saves updated deployment data
 
 ---
+
+## How it works
+
+This pipeline builds and publishes a Maven publication to Sonatype Central. It runs automatically when executing the final publish task.
+
+**Steps:**
+
+1. **BuildPublicationArtifacts**
+
+    * Builds all artifacts for the publication.
+    * Depends on underlying build tasks and any extra configured tasks.
+
+2. **AggregateFiles**
+
+    * Copies all artifacts to a temporary directory.
+    * Renames files to standard Maven conventions.
+
+3. **ComputeHashes**
+
+    * Generates MD5 and SHA-1 hashes for all aggregated files.
+    * Optional additional hash algorithms can be configured.
+
+4. **CreateZip**
+
+    * Packages all files and hashes into a single zip archive for upload.
+
+5. **PublishToSonatypeCentral**
+
+    * Uploads the zip bundle to Sonatype Nexus.
+    * Saves the deployment ID for tracking.
+
+**Pipeline Flow:**
+
+```
+buildArtifacts → aggregateFiles → computeHashes → createZip → publishToSonatype
+```
+
