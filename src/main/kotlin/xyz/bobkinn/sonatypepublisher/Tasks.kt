@@ -281,7 +281,7 @@ abstract class CheckDeployments : DefaultTask() {
     }
 }
 
-abstract class DropFailed : DefaultTask() {
+abstract class DropFailedDeployments : DefaultTask() {
     init {
         group = TASKS_GROUP
         description = "Fetches and updates current deployments and then drops any failed current deployments"
