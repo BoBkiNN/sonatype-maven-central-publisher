@@ -6,7 +6,8 @@ import org.gradle.api.Project
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.logging.Logger
-import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.publish.internal.PublicationInternal
 import org.gradle.api.publish.maven.MavenArtifact
 import org.gradle.api.publish.maven.MavenPublication
@@ -15,14 +16,15 @@ import xyz.bobkinn.sonatypepublisher.utils.HashUtils
 import xyz.bobkinn.sonatypepublisher.utils.PublisherApi
 import xyz.bobkinn.sonatypepublisher.utils.ZipUtils
 import java.io.File
-import javax.inject.Inject
 
-abstract class BuildPublicationArtifacts
-    @Inject
-    constructor(
-        @Internal val publication: Provider<MavenPublication>,
-        @Internal val additionalTasks: List<String>,
-    ) : DefaultTask() {
+abstract class BuildPublicationArtifacts : DefaultTask() {
+
+        @get:Internal
+        abstract val publication: Property<MavenPublication>
+
+        @get:Internal
+        abstract val additionalTasks: ListProperty<String>
+
         init {
             val publication = publication.get()
             if (publication is PublicationInternal<*>) {
@@ -33,7 +35,7 @@ abstract class BuildPublicationArtifacts
                 dependsOn(tasks)
                 logger.debug("Publication depends on tasks: {}", tasks.map { it.path })
             }
-            dependsOn(*additionalTasks.toTypedArray())
+            dependsOn(*additionalTasks.get().toTypedArray())
 
             group = TASKS_GROUP
             description = "Aggregator task to build publication artifacts"
@@ -41,12 +43,13 @@ abstract class BuildPublicationArtifacts
 
     }
 
-abstract class AggregateFiles
-@Inject constructor(
-    @Internal val publication: Provider<MavenPublication>,
-    @OutputDirectory
-    val targetDirectory: Provider<Directory>
-) : DefaultTask() {
+abstract class AggregateFiles : DefaultTask() {
+
+    @get:OutputDirectory
+    abstract val targetDirectory: Property<Directory>
+
+    @get:Internal
+    abstract val publication: Property<MavenPublication>
 
     init {
         group = TASKS_GROUP
@@ -95,16 +98,19 @@ abstract class AggregateFiles
     }
 }
 
-abstract class ComputeHashes
-    @Inject
-    constructor(
-        @Internal val directory: Provider<Directory>,
-        @Internal val additionalAlgorithms: List<String>,
-    ) : DefaultTask() {
-        init {
-            group = TASKS_GROUP
-            description = "Compute Hash of all files in a temporary directory."
-        }
+@CacheableTask
+abstract class ComputeHashes : DefaultTask() {
+
+    init {
+        group = TASKS_GROUP
+        description = "Compute Hash of all files in a temporary directory."
+    }
+
+    @get:InputDirectory
+    abstract val directory: Property<Directory>
+
+    @get:Input
+    abstract val additionalAlgorithms: ListProperty<String>
 
     companion object {
         val REQUIRED_ALGORITHMS = listOf("MD5", "SHA-1")
@@ -115,14 +121,17 @@ abstract class ComputeHashes
             logger.debug("Writing file hashes at {}",
                 directory.get().asFile.relativeTo(project.rootDir))
             HashUtils.writesFilesHashes(directory.get().asFile,
-                REQUIRED_ALGORITHMS + additionalAlgorithms)
+                REQUIRED_ALGORITHMS + additionalAlgorithms.get())
         }
     }
 
-abstract class CreateZip @Inject constructor(
-    @get:InputDirectory val fromDirectory: Provider<Directory>,
-    @get:OutputFile val zipFile: Provider<RegularFile>
-) : DefaultTask() {
+@CacheableTask
+abstract class CreateZip : DefaultTask() {
+    @get:InputDirectory
+    abstract val fromDirectory: Property<Directory>
+
+    @get:OutputFile
+    abstract val zipFile: Property<RegularFile>
 
     init {
         group = TASKS_GROUP
@@ -141,12 +150,13 @@ abstract class CreateZip @Inject constructor(
     }
 }
 
-abstract class PublishToSonatypeCentral @Inject constructor(
-    @InputFile
-    val zipFile: Provider<RegularFile>,
-    @Input
-    val config: SonatypePublishConfig
-) : DefaultTask() {
+abstract class PublishToSonatypeCentral : DefaultTask() {
+
+    @get:InputFile
+    abstract val zipFile: Property<RegularFile>
+
+    @get:Nested
+    abstract val config: Property<SonatypePublishConfig>
 
     init {
         group = TASKS_GROUP
@@ -155,6 +165,7 @@ abstract class PublishToSonatypeCentral @Inject constructor(
 
     @TaskAction
     fun uploadZip() {
+        val config = config.get()
         logger.lifecycle("Uploading ${config.name} to Sonatype..")
         val id = try {
             PublisherApi.uploadBundle(zipFile.get(), config.publishingType.get(),

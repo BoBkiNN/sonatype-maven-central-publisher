@@ -1,5 +1,6 @@
 package xyz.bobkinn.sonatypepublisher
 
+import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.internal.provider.Providers
@@ -8,6 +9,8 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import javax.inject.Inject
 
 @Suppress("unused")
@@ -16,19 +19,16 @@ enum class PublishingType {
     USER_MANAGED
 }
 
-abstract class SonatypePublishConfig @Inject constructor(
-    objects: ObjectFactory,
-    val name: String
-) {
+abstract class SonatypePublishConfig : Named {
 
-    val publishingType: Property<PublishingType> =
-        objects.property(PublishingType::class.java)
+    @get:Input
+    abstract val publishingType: Property<PublishingType>
 
     /**
      * Additional tasks used to build artifacts
      */
-    val additionalTasks: ListProperty<String> =
-        objects.listProperty(String::class.java)
+    @get:Input
+    abstract val additionalTasks: ListProperty<String>
 
     /**
      * List of hashing algorithm names to include into publication bundle.
@@ -37,20 +37,20 @@ abstract class SonatypePublishConfig @Inject constructor(
      * See [MessageDigest Algorithms section](https://docs.oracle.com/en/java/javase/17/docs/specs/security/standard-names.html#messagedigest-algorithms)
      * to find out what other algorithms can be used.
      */
-    val additionalAlgorithms: ListProperty<String> =
-        objects.listProperty(String::class.java)
+    @get:Input
+    abstract val additionalAlgorithms: ListProperty<String>
 
-    val username: Property<String> =
-        objects.property(String::class.java)
+    @get:Input
+    abstract val username: Property<String>
 
-    val password: Property<String> =
-        objects.property(String::class.java)
+    @get:Internal
+    abstract val password: Property<String>
 
     /**
      * Publication which artifacts will be built and included into publication.<br>
      */
-    val publication: Property<MavenPublication> =
-        objects.property(MavenPublication::class.java)
+    @get:Internal
+    abstract val publication: Property<MavenPublication>
 }
 
 @Suppress("unused")
@@ -59,14 +59,11 @@ abstract class SonatypePublishExtension @Inject constructor(
 ) : NamedDomainObjectContainer<SonatypePublishConfig>
 by objects.domainObjectContainer(SonatypePublishConfig::class.java) {
 
-    val publishingType: Property<PublishingType> =
-        objects.property(PublishingType::class.java)
+    abstract val publishingType: Property<PublishingType>
 
-    val username: Property<String> =
-        objects.property(String::class.java)
+    abstract val username: Property<String>
 
-    val password: Property<String> =
-        objects.property(String::class.java)
+    abstract val password: Property<String>
 
     fun registerMaven(name: String, pub: Provider<MavenPublication>,
                       configuration: (SonatypePublishConfig) -> Unit = {}) {

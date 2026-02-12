@@ -57,13 +57,15 @@ fun registerTasksPipeline(
     project: Project,
     config: SonatypePublishConfig
 ) {
-    val additionalTasks = config.additionalTasks.get()
-    val additionalAlgorithms = config.additionalAlgorithms.get()
     val pub = config.publication
     val name = config.name.capitalized()
 
     val buildArtifacts = project.tasks.register("build${name}Artifacts",
-        BuildPublicationArtifacts::class.java, pub, additionalTasks)
+        BuildPublicationArtifacts::class.java)
+    buildArtifacts.configure {
+        it.publication.set(pub)
+        it.additionalTasks.set(config.additionalTasks)
+    }
 
     val pubFolder = project.layout.buildDirectory
         .dir(PLUGIN_FOLDER_NAME).resolveDir(name)
@@ -76,22 +78,32 @@ fun registerTasksPipeline(
     }
 
     val aggregateFiles = project.tasks.register("aggregate${name}Files",
-        AggregateFiles::class.java, pub, filesFolder)
-    aggregateFiles.configure { it.dependsOn(buildArtifacts) }
+        AggregateFiles::class.java)
+    aggregateFiles.configure {
+        it.publication.set(pub)
+        it.targetDirectory.set(filesFolder)
+        it.dependsOn(buildArtifacts)
+    }
 
     // Calculate md5 and sha1 hash of all files in a given directory
     val computeHashes = project.tasks.register("compute${name}FileHashes",
-        ComputeHashes::class.java, filesFolder, additionalAlgorithms)
-    computeHashes.configure { it.dependsOn(aggregateFiles) }
+        ComputeHashes::class.java)
+    computeHashes.configure {
+        it.directory.set(aggregateFiles.flatMap { it.targetDirectory })
+        it.additionalAlgorithms.set(config.additionalAlgorithms)
+    }
 
     // Create a zip of all files in a given directory
     val archiveFile = pubFolder.map { it.file(UPLOAD_ZIP_NAME) }
-    val createZip = project.tasks.register("create${name}Zip", CreateZip::class.java,
-        aggregateFolder, archiveFile)
-    createZip.configure { it.dependsOn(computeHashes) }
+    val createZip = project.tasks.register("create${name}Zip", CreateZip::class.java)
+    createZip.configure {
+        it.fromDirectory.set(computeHashes.flatMap { it.directory })
+        it.zipFile.set(archiveFile)
+    }
 
     // Publish to Sonatype Maven Central Repository
-    project.tasks.register("publish${name}ToSonatype", PublishToSonatypeCentral::class.java,
-        archiveFile, config)
-        .configure { it.dependsOn(createZip) }
+    project.tasks.register("publish${name}ToSonatype", PublishToSonatypeCentral::class.java) {
+        it.zipFile.set(createZip.flatMap { it.zipFile })
+        it.config.set(config)
+    }
 }
