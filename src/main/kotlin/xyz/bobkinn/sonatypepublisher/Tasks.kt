@@ -371,17 +371,24 @@ abstract class DropFailedDeployments : DefaultTask() {
 
         logger.lifecycle("Dropping failed deployments..")
         var c = 0
-        for (dep in dd.current.values) {
+        val it = dd.current.values.iterator()
+        while (it.hasNext()) {
+            val dep = it.next()
             val status = dep.deployment ?: continue
             if (!status.isFailed) continue
             try {
                 PublisherApi.dropDeployment(dep.id, username, password)
-                c++
             } catch (e: PublisherApi.PortalApiError) {
                 throw GradleException("Failed to drop failed deployment ${dep.id}", e)
             }
+            c++
+            it.remove()
         }
         logger.lifecycle("Dropped $c failed deployment(s) out of total ${dd.current.size}")
+        if (c > 0) {
+            logger.debug("Saving deployment data after dropping failed")
+            StoredDeploymentsManager.save(thisProject, dd)
+        }
     }
 }
 
