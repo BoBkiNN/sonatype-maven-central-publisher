@@ -58,7 +58,7 @@ pluginManagement {
 Add and apply plugin in `build.gradle.kts`:
 ```kotlin
 plugins {
-    id("io.github.bobkinn.sonatype-publisher") version "2.0.1"
+    id("io.github.bobkinn.sonatype-publisher") version "2.2.1"
 }
 ```
 
