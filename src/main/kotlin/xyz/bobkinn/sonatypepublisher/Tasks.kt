@@ -26,6 +26,7 @@ abstract class BuildPublicationArtifacts
         init {
             val publication = publication.get()
             if (publication is PublicationInternal<*>) {
+                // using PublicationInternal#publishableArtifacts to obtain real artifacts list
                 val tasks = publication.publishableArtifacts.map {
                     it.buildDependencies.getDependencies(null)
                 }.flatten()
