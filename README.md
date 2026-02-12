@@ -10,19 +10,23 @@
 This simple plugin builds and uploads existing maven publication to Maven Central Repository
 using [Portal Publisher API](https://central.sonatype.org/publish/publish-portal-api/)
 
+> Tested on Gradle 8.14
+
 ## Usage:
 1. Add and apply plugin
 2. Configure extension:
 ```kotlin
 extensions.configure(SonatypePublishExtension::class) {
+    // specify maven central repository token username and password
     username = System.getenv("MAVEN_CENTRAL_USERNAME")
     password = System.getenv("MAVEN_CENTRAL_PASSWORD")
-    publishingType = PublishingType.USER_MANAGED
+    publishingType = PublishingType.USER_MANAGED // or AUTOMATIC so deployments released when ready
 
+    // using shortcut method to register central publish for maven publication and same name
     registerMaven(publishing.publications.named("main", MavenPublication::class))
 }
 ```
-3. Configure your publication with correct POM and setup signing
+3. Configure your publication with correct POM and signing to match maven central requirements
 4. Run task `publish<publication name>ToSonatype`
 
 ## Adding to project:
