@@ -249,8 +249,8 @@ abstract class PublishDeployment : DefaultTask() {
         StoredDeploymentsManager.update(project, deploymentId) {
             if (it == null) return@update null
             val st = it.deployment ?: return@update null
+            // return updated deployment
             it.updated(st.copy(deploymentState = PublisherApi.DeploymentState.PUBLISHING))
-            it
         }
     }
 }
@@ -400,6 +400,7 @@ abstract class PublishValidatedDeployments : DefaultTask() {
 
         logger.lifecycle("Publishing validated deployments..")
         var c = 0
+        val updated = mutableListOf<Deployment>()
         for (dep in dd.current.values) {
             val status = dep.deployment ?: continue
             if (!status.isValidated) continue
@@ -410,7 +411,12 @@ abstract class PublishValidatedDeployments : DefaultTask() {
             }
             c++
             // change state to publishing
-            dep.updated(status.copy(deploymentState = PublisherApi.DeploymentState.PUBLISHING))
+            val u = dep.updated(status.copy(deploymentState = PublisherApi.DeploymentState.PUBLISHING))
+            updated.add(u)
+        }
+        // replace updated
+        for (d in updated) {
+            dd.current[d.id] = d
         }
         logger.lifecycle("Published $c validated deployment(s) out of total ${dd.current.size}. " +
                 "See dashboard for status or run checkDeployments task")
