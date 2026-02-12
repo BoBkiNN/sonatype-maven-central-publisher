@@ -317,9 +317,11 @@ abstract class CheckDeployments : DefaultTask() {
         else logger.info("Deployment ${dep.id} - UNKNOWN")
     }
 
+    private val thisProject = project
+
     @TaskAction
     fun executeTask() {
-        val dd = updateGetDeployments(project, logger, deploymentId)
+        val dd = updateGetDeployments(thisProject, logger, deploymentId)
         deploymentId?.let {
             if (it.isBlank()) throw GradleException("Passed deploymentId property is blank")
             logger.info("--- Deployment $it status:")
@@ -346,10 +348,11 @@ abstract class DropFailedDeployments : DefaultTask() {
     }
 
     private val extension = project.extensions.getByType(SonatypePublishExtension::class.java)
+    private val thisProject = project
 
     @TaskAction
     fun executeTask() {
-        val dd = updateGetDeployments(project, logger)
+        val dd = updateGetDeployments(thisProject, logger)
         val username = extension.username.get()
         val password = extension.password.get()
 
@@ -376,10 +379,11 @@ abstract class PublishValidatedDeployments : DefaultTask() {
     }
 
     private val extension = project.extensions.getByType(SonatypePublishExtension::class.java)
+    private val thisProject = project
 
     @TaskAction
     fun executeTask() {
-        val dd = updateGetDeployments(project, logger)
+        val dd = updateGetDeployments(thisProject, logger)
         val username = extension.username.get()
         val password = extension.password.get()
 
@@ -401,7 +405,7 @@ abstract class PublishValidatedDeployments : DefaultTask() {
                 "See dashboard for status or run checkDeployments task")
         if (c > 0) {
             logger.debug("Saving deployment data after publishes")
-            StoredDeploymentsManager.save(project, dd)
+            StoredDeploymentsManager.save(thisProject, dd)
         }
     }
 }
