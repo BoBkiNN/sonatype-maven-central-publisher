@@ -1,6 +1,7 @@
 package xyz.bobkinn.sonatypepublisher
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import org.gradle.api.Project
 import xyz.bobkinn.sonatypepublisher.utils.PublisherApi
@@ -42,7 +43,7 @@ data class DeploymentsData(
 }
 
 object StoredDeploymentsManager {
-    val GSON = Gson()
+    val GSON: Gson = GsonBuilder().setPrettyPrinting().create()
 
     const val FILE_NAME = "deployments.json"
 
