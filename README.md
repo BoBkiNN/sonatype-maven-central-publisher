@@ -78,6 +78,10 @@ There are also more plans for plugin in [TODO file](/TODO.md)
 These tasks provide **manual control and bulk automation** for Sonatype Portal deployments.
 They are **not bound to specific project configurations** — instead they operate using stored deployment IDs and Sonatype credentials defined in your `SonatypePublishExtension`.
 
+Deployments statuses is stored in `<root project>/build/sonatypePublish/deployments.json`:
+`current` - currently unpublished deployments. They are used in tasks
+`published` - published deployments, exists just for informational purposes
+
 All tasks use credentials defined in your plugin extension:
 ```kotlin
 sonatypePublish {
