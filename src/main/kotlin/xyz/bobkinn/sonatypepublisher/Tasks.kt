@@ -171,51 +171,6 @@ abstract class PublishToSonatypeCentral @Inject constructor(
 
 // common tasks
 
-abstract class GetDeploymentStatus : DefaultTask() {
-    init {
-        group = TASKS_GROUP
-        description = "Get deployment status using deploymentId"
-    }
-
-    @Input
-    var deploymentId: String = project.findProperty("deploymentId")?.toString() ?: ""
-
-    private val extension = project.extensions.getByType(SonatypePublishExtension::class.java)
-
-    @TaskAction
-    fun executeTask() {
-        logger.lifecycle("Getting deployment status for $deploymentId")
-        if (deploymentId.isBlank()) throw IllegalArgumentException("No deployment id provided")
-        val status = try {
-            PublisherApi.getDeploymentStatus(deploymentId, extension.username.get(), extension.password.get())
-        } catch (e: PublisherApi.PortalApiError) {
-            throw GradleException("Failed to get deployment status", e)
-        }
-        val json = PublisherApi.gson.toJson(status)
-        logger.lifecycle("Got deployment status:\n$json")
-
-        logger.debug("Updating deployment data..")
-        if (status != null && status.isPublished) {
-            logger.debug("Moving deployment to published list")
-            val dep = Deployment(deploymentId, status, System.currentTimeMillis())
-            // put to published
-            StoredDeploymentsManager.putPublished(project, dep)
-            // remove from current
-            StoredDeploymentsManager.removeCurrent(project, deploymentId)
-        } else if (status != null) {
-            logger.debug("Updating current deployments list..")
-            // update current
-            StoredDeploymentsManager.update(project, deploymentId) {
-                it?.update(status) // update status if already listed
-            }
-        } else {
-            logger.debug("Deployment not found, removing it from lists..")
-            StoredDeploymentsManager.removeCurrent(project, deploymentId)
-            StoredDeploymentsManager.removePublished(project, deploymentId)
-        }
-    }
-}
-
 abstract class DropDeployment : DefaultTask() {
     init {
         group = TASKS_GROUP
@@ -305,6 +260,7 @@ abstract class CheckDeployments : DefaultTask() {
     fun executeTask() {
         val dd = updateGetDeployments(project, logger)
         deploymentId?.let {
+            if (it.isBlank()) throw GradleException("Passed deploymentId property is blank")
             logger.info("--- Deployment $it status:")
             val dep = dd[it]
             if (dep == null) throw GradleException("No deployment with id $it stored")
