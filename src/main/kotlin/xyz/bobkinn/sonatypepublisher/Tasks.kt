@@ -310,15 +310,15 @@ abstract class CheckDeployments : DefaultTask() {
     }
 
     private fun logStatus(status: PublisherApi.DeploymentStatus) {
-        logger.info("Deployment ${status.deploymentId} - ${status.deploymentState}:")
-        logger.info("  Name: ${status.deploymentName}")
+        logger.lifecycle("Deployment ${status.deploymentId} - ${status.deploymentState}:")
+        logger.lifecycle("  Name: ${status.deploymentName}")
         val errorsJson = PublisherApi.GSON.toJson(status.errors)
-        logger.info("  Errors: $errorsJson")
+        logger.lifecycle("  Errors: $errorsJson")
     }
 
     private fun logDeployment(dep: Deployment) {
         if (dep.deployment != null) logStatus(dep.deployment)
-        else logger.info("Deployment ${dep.id} - UNKNOWN")
+        else logger.lifecycle("Deployment ${dep.id} - UNKNOWN")
     }
 
     private val thisProject = project
@@ -329,17 +329,17 @@ abstract class CheckDeployments : DefaultTask() {
         val dd = updateGetDeployments(thisProject, logger, deploymentId)
         deploymentId?.let {
             if (it.isBlank()) throw GradleException("Passed deploymentId property is blank")
-            logger.info("--- Deployment $it status:")
+            logger.lifecycle("--- Deployment $it status:")
             val dep = dd[it]
             if (dep == null) throw GradleException("No deployment with id $it stored")
             logDeployment(dep)
             return
         }
         if (dd.current.isEmpty()) {
-            logger.info("No unreleased deployment IDs stored")
+            logger.lifecycle("No unreleased deployment IDs stored")
             return
         }
-        logger.info("Status of ${dd.current.size} unreleased deployment(s):")
+        logger.lifecycle("Status of ${dd.current.size} unreleased deployment(s):")
         for (dep in dd.current.values) {
             logDeployment(dep)
         }
