@@ -74,17 +74,6 @@ object StoredDeploymentsManager {
         }
     }
 
-    fun putPublished(project: Project, dep: Deployment) {
-        val d = load(project)
-        d.published[dep.id] = dep
-        save(project, d)
-    }
-
-    fun removePublished(project: Project, id: String) {
-        val d = load(project)
-        if (d.published.remove(id) != null) save(project, d)
-    }
-
     fun removeCurrent(project: Project, id: String) {
         val d = load(project)
         if (d.current.remove(id) != null) save(project, d)
@@ -96,12 +85,4 @@ object StoredDeploymentsManager {
         save(project, d)
     }
 
-    fun update(project: Project, id: String, action: (Deployment?) -> Deployment?) {
-        val d = load(project)
-        val dp = d.current[id]
-        val ndp = action(dp)
-        if (ndp == null) d.current.remove(id)
-        else d.current[id] = ndp
-        save(project, d)
-    }
 }
