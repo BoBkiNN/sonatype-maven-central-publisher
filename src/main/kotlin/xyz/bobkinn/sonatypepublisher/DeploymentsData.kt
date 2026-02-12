@@ -65,6 +65,10 @@ object StoredDeploymentsManager {
 
     fun save(project: Project, data: DeploymentsData) {
         val file = getFile(project)
+        val folder = file.parentFile
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw IOException("Failed to create folder for $file")
+        }
         return try {
             file.writer().use {
                 GSON.toJson(data, it)
