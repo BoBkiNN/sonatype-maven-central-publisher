@@ -30,8 +30,7 @@ abstract class BuildPublicationArtifacts
                     it.buildDependencies.getDependencies(null)
                 }
                 dependsOn(tasks)
-                logger.debug("Publication depends on tasks: {}",
-                    tasks.map { it.map { it.path }.toString() })
+                logger.debug("Publication depends on tasks: {}", tasks.flatten().map { it.path })
             }
             dependsOn(*additionalTasks.toTypedArray())
 
@@ -85,10 +84,9 @@ abstract class AggregateFiles
             file.copyTo(targetFile, overwrite = true)
             logger.debug("Copied artifact {} to {}", file, targetFile)
         }
-        pub.publishableArtifacts.forEach { it ->
+        pub.publishableArtifacts.filterIsInstance<MavenArtifact>().forEach { it ->
 //            val producerTasks = it.buildDependencies.getDependencies(null)
 //            println("Artifact ${it.file}, prod: $producerTasks")
-            it as MavenArtifact
             processArtifact(it.file, it.classifier, it.extension)
         }
     }
@@ -205,7 +203,7 @@ abstract class PublishDeployment : DefaultTask() {
     }
 
     @Input
-    var deploymentId: String = project.findProperty("deploymentId")?.toString() ?: ""
+    val deploymentId: String = project.findProperty("deploymentId")?.toString() ?: ""
 
     private val extension = project.extensions.getByType(SonatypePublishExtension::class.java)
 
@@ -216,7 +214,7 @@ abstract class PublishDeployment : DefaultTask() {
         try {
             PublisherApi.publishDeployment(deploymentId, extension.username.get(), extension.password.get())
         } catch (e: PublisherApi.PortalApiError) {
-            throw GradleException("Failed to perform drop", e)
+            throw GradleException("Failed to perform publish", e)
         }
         logger.lifecycle("Deployment $deploymentId is now publishing")
 
@@ -278,7 +276,7 @@ abstract class CheckDeployments : DefaultTask() {
     }
 
     @Input
-    var deploymentId: String? = project.findProperty("deploymentId")?.toString()
+    val deploymentId: String? = project.findProperty("deploymentId")?.toString()
 
     private fun logStatus(status: PublisherApi.DeploymentStatus) {
         logger.info("Deployment ${status.deploymentId} - ${status.deploymentState}:")
