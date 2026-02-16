@@ -3,8 +3,9 @@
 <!--suppress HtmlDeprecatedAttribute -->
 <div align="center">
 
-![JitPack](https://img.shields.io/jitpack/version/com.github.BoBkiNN/sonatype-publisher)
-
+<a href="https://jitpack.io/#BoBkiNN/sonatype-publisher">
+<img alt="JitPack" src="https://img.shields.io/jitpack/version/com.github.BoBkiNN/sonatype-publisher">
+</a>
 </div>
 
 This simple plugin builds and uploads existing maven publication to Maven Central Repository
