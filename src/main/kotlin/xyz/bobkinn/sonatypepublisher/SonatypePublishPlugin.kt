@@ -80,6 +80,7 @@ fun registerTasksPipeline(
         AggregateFiles::class.java)
     aggregateFiles.configure {
         it.publication.set(pub)
+        it.aggregateDirectory.set(aggregateFolder)
         it.targetDirectory.set(filesFolder)
         it.dependsOn(buildArtifacts)
     }

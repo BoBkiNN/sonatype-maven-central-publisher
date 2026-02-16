@@ -46,6 +46,9 @@ abstract class BuildPublicationArtifacts
 
 abstract class AggregateFiles : DefaultTask() {
 
+    @get:Internal
+    abstract val aggregateDirectory: DirectoryProperty
+
     @get:OutputDirectory
     abstract val targetDirectory: DirectoryProperty
 
@@ -62,8 +65,9 @@ abstract class AggregateFiles : DefaultTask() {
     @TaskAction
     fun action() {
         val folder = targetDirectory.get().asFile
-        if (folder.exists() && !folder.deleteRecursively()) {
-            throw GradleException("Failed to clean directory $folder")
+        val aggFolder = aggregateDirectory.get().asFile
+        if (aggFolder.exists() && !aggFolder.deleteRecursively()) {
+            throw GradleException("Failed to clean directory $aggFolder")
         }
         folder.mkdirs()
 
