@@ -6,6 +6,9 @@
 <a href="https://jitpack.io/#BoBkiNN/sonatype-publisher">
 <img alt="JitPack" src="https://img.shields.io/jitpack/version/com.github.BoBkiNN/sonatype-publisher">
 </a>
+<a href="https://plugins.gradle.org/plugin/io.github.bobkinn.sonatype-publisher">
+<img alt="Gradle Plugin Portal Version" src="https://img.shields.io/gradle-plugin-portal/v/io.github.bobkinn.sonatype-publisher">
+</a>
 </div>
 
 This simple plugin builds and uploads existing maven publication to Maven Central Repository
@@ -37,29 +40,21 @@ sonatypePublish {
 ## Adding to project:
 
 **Java 17 or later required**<br>
-Setup JitPack plugin repository in `settings.gradle.kts`:
+Setup Gradle Plugin Portal plugin repository in `settings.gradle.kts`:
 ```kotlin
 pluginManagement {
     repositories {
-        maven("https://jitpack.io") // add JitPack repository
-        gradlePluginPortal()
-    }
-
-    // optional resolution strategy to use correct id
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "io.github.bobkinn.sonatype-publisher") {
-                useModule("com.github.BoBkiNN:sonatype-publisher:${requested.version}")
-            }
-        }
+        gradlePluginPortal() // add if not already
     }
 }
 ```
 
-Add and apply plugin in `build.gradle.kts`:
+Or setup using JitPack - [How To section](https://jitpack.io/#BoBkiNN/sonatype-publisher).
+
+Add then apply plugin in `build.gradle.kts`:
 ```kotlin
 plugins {
-    id("io.github.bobkinn.sonatype-publisher") version "2.2.1"
+    id("io.github.bobkinn.sonatype-publisher") version "2.2.4"
 }
 ```
 
